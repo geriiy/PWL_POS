@@ -6,37 +6,27 @@
 <body>
     <h1>Form Tambah Data User</h1>
 
-    <!-- Menampilkan error jika ada -->
-    @if ($errors->any())
-        <div style="color: red;">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="/user/tambah_simpan">
+    <form method="POST" action="{{ route('user.tambah_simpan') }}">
         @csrf
-
+    
         <label>Username</label>
-        <input type="text" name="username" placeholder="Masukkan Username">
+        <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukan Username">
         <br>
-
+    
         <label>Nama</label>
-        <input type="text" name="nama" placeholder="Masukkan Nama">
+        <input type="text" name="nama" value="{{ old('nama') }}" placeholder="Masukan Nama">
         <br>
-
+    
         <label>Password</label>
-        <input type="password" name="password" placeholder="Masukkan Password">
+        <input type="password" name="password" placeholder="Masukan Password">
         <br>
-
+    
         <label>Level ID</label>
-        <input type="number" name="level_id" placeholder="Masukkan ID Level">
+        <input type="number" name="level_id" value="{{ old('level_id') }}" placeholder="Masukan ID Level">
         <br><br>
-
-        <input type="submit" value="Simpan">
+    
+        <input type="submit" class="btn btn-success" value="Simpan">
     </form>
+    
 </body>
 </html>
