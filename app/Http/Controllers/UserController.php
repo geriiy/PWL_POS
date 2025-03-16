@@ -74,6 +74,15 @@ public function create()
     }
 
 // Menyimpan data user baru
+
+
+public function create_ajax()
+{
+    $level = LevelModel::select('level_id', 'level_nama')->get();
+
+    return view('user.create_ajax')
+        ->with('level', $level);
+}
 public function store(Request $request)
 {
     $request->validate([

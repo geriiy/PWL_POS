@@ -16,20 +16,20 @@
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview"
     role="menu" data-accordion="false">
     <li class="nav-item">
-    <a href="{{ url('/') }}" class="nav-link {{ ($activeMenu == 'dashboard')?
-    'active' : '' }} ">
+        <a href="{{ url('/') }}" class="nav-link {{ isset($activeMenu) && $activeMenu == 'dashboard' ? 'active' : '' }}">
+
     <i class="nav-icon fas fa-tachometer-alt"></i>
     <p>Dashboard</p>
     </a>
     </li>
     <li class="nav-header">Data Pengguna</li>
-<li class="nav-item">
-<a href="{{ url('/level') }}" class="nav-link {{ ($activeMenu == 'level')?
-'active' : '' }} ">
-<i class="nav-icon fas fa-layer-group"></i>
-<p>Level User</p>
-</a>
-</li>
+    <li class="nav-item">
+        <a href="{{ url('/level') }}" class="nav-link {{ request()->is('level') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-layer-group"></i>
+            <p>Level User</p>
+        </a>
+    </li>
+    
 <li class="nav-item">
 <a href="{{ url('/user') }}" class="nav-link {{ ($activeMenu == 'user')?
 'active' : '' }}">
@@ -61,12 +61,12 @@
 </a>
 </li>
 <li class="nav-item">
-<a href="{{ url('/barang') }}" class="nav-link {{ ($activeMenu ==
-'penjualan')? 'active' : '' }} ">
-<i class="nav-icon fas fa-cash-register"></i>
-<p>Transaksi Penjualan</p>
-</a>
+    <a href="{{ url('/penjualan') }}" class="nav-link {{ ($activeMenu == 'penjualan')? 'active' : '' }} ">
+        <i class="nav-icon fas fa-cash-register"></i>
+        <p>Transaksi Penjualan</p>
+    </a>
 </li>
+
 </ul>
 </nav>
 </div>
