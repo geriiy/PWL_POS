@@ -114,7 +114,7 @@ class LevelController extends Controller
 
         $activeMenu = 'level'; // set menu yang sedang aktif
 
-        return view('level.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'level' => $level, 'activeMenu' => $activeMenu]);
+        return view('level.edit', ['breadcrumb' => $breadcrumb, 'page' => $page, 'level' => $level, 'activeMenu' => $activeMenu]);
     }
 
     // Menyimpan perubahan data level

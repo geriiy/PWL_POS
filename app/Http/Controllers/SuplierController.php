@@ -6,6 +6,11 @@ use App\Models\SuplierModel;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\SupplierExport;
+use App\Imports\SupplierImport;
+
 
 class SuplierController extends Controller
 {
@@ -29,16 +34,11 @@ class SuplierController extends Controller
     // Ambil data suplier dalam bentuk JSON untuk DataTables
     public function list()
     {
-        $supliers = SuplierModel::select('suplier_id', 'nama_suplier', 'alamat_suplier', 'kontak_suplier', 'created_at', 'updated_at');
+        $supliers = SuplierModel::select('supplier_id', 'supplier_nama', 'supplier_alamat', 'created_at', 'updated_at');
 
         return DataTables::of($supliers)
             ->addIndexColumn()
             ->addColumn('aksi', function ($suplier) {
-                // $btn  = '<a href="'.url('/suplier/' . $suplier->suplier_id).'" class="btn btn-info btn-sm">Detail</a> ';
-                // $btn .= '<a href="'.url('/suplier/' . $suplier->suplier_id . '/edit').'" class="btn btn-warning btn-sm">Edit</a> ';
-                // $btn .= '<form class="d-inline-block" method="POST" action="'. url('/suplier/'.$suplier->suplier_id).'">'
-                //         . csrf_field() . method_field('DELETE') .  
-                //         '<button type="submit" class="btn btn-danger btn-sm" onclick="return confirm(\'Apakah Anda yakin menghapus data ini?\');">Hapus</button></form>';      
                 $btn  = '<button onclick="modalAction(\''.url('/suplier/' . $suplier->suplier_id . '/show_ajax').'\')" class="btn btn-info btn-sm">Detail</button> '; 
                 $btn .= '<button onclick="modalAction(\''.url('/suplier/' . $suplier->suplier_id . '/edit_ajax').'\')" class="btn btn-warning btn-sm">Edit</button> '; 
                 $btn .= '<button onclick="modalAction(\''.url('/suplier/' . $suplier->suplier_id . '/delete_ajax').'\')"  class="btn btn-danger btn-sm">Hapus</button> '; 
@@ -69,15 +69,13 @@ class SuplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_suplier' => 'required|string|max:100',
-            'alamat_suplier' => 'required|string',
-            'kontak_suplier' => 'required|string|max:20|unique:m_suplier,kontak_suplier',
+            'supplier_nama' => 'required|string|max:100',
+            'supplier_alamat' => 'required|string',
         ]);
 
         SuplierModel::create([
-            'nama_suplier' => $request->nama_suplier,
-            'alamat_suplier' => $request->alamat_suplier,
-            'kontak_suplier' => $request->kontak_suplier,
+            'supplier_nama' => $request->supplier_nama,
+            'supplier_alamat' => $request->supplier_alamat,
         ]);
 
         return redirect('/suplier')->with('success', 'Data suplier berhasil disimpan');
@@ -125,16 +123,14 @@ class SuplierController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'nama_suplier' => 'required|string|max:100',
-            'alamat_suplier' => 'required|string',
-            'kontak_suplier' => 'required|string|max:20|unique:m_suplier,kontak_suplier,' . $id . ',suplier_id',
+            'supplier_nama' => 'required|string|max:100',
+            'supplier_alamat' => 'required|string',
         ]);
 
         $suplier = SuplierModel::findOrFail($id);
         $suplier->update([
-            'nama_suplier' => $request->nama_suplier,
-            'alamat_suplier' => $request->alamat_suplier,
-            'kontak_suplier' => $request->kontak_suplier,
+            'supplier_nama' => $request->supplier_nama,
+            'supplier_alamat' => $request->supplier_alamat,
         ]);
 
         return redirect('/suplier')->with('success', 'Data suplier berhasil diperbarui');
@@ -156,100 +152,66 @@ class SuplierController extends Controller
         }
     }
 
-    // Tampilkan form create (via ajax)
-    public function create_ajax()
-    {
-        return view('suplier.create_ajax');
+
+public function exportPdf()
+{
+    $supliers = SuplierModel::all();
+
+    $pdf = Pdf::loadView('suplier.export_pdf', compact('supliers'))
+              ->setPaper('A4', 'portrait');
+
+    return $pdf->download('data-suplier.pdf');
+}
+
+
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    $path = $request->file('file')->getRealPath();
+
+    $data = Excel::toCollection(null, $request->file('file'));
+
+    if ($data->isEmpty()) {
+        return redirect()->back()->with('error', 'File kosong atau tidak valid.');
     }
 
-    // Simpan data baru (ajax)
-    public function store_ajax(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'nama_suplier' => 'required|string|max:100',
-            'alamat_suplier' => 'required|string',
-            'kontak_suplier' => 'required|string|max:15',
-        ]);
+    // Ambil hanya sheet pertama
+    $rows = $data[0];
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validasi gagal',
-                'msgField' => $validator->errors()
-            ]);
+    foreach ($rows as $index => $row) {
+        if (!isset($row[0]) || !isset($row[1])) {
+            continue; // skip jika kolom kosong
         }
 
-        SuplierModel::create($request->all());
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Data suplier berhasil disimpan'
+        SuplierModel::create([
+            'supplier_nama' => $row[0],
+            'supplier_alamat' => $row[1],
         ]);
     }
 
-    // Tampilkan form edit (via ajax)
-    public function edit_ajax($id)
-    {
-        $suplier = SuplierModel::find($id);
-        return view('suplier.edit_ajax', compact('suplier'));
-    }
+    return redirect()->route('suplier.index')->with('success', 'Data suplier berhasil diimpor.');
+}
 
-    // Update data suplier (ajax)
-    public function update_ajax(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'nama_suplier' => 'required|string|max:100',
-            'alamat_suplier' => 'required|string',
-            'kontak_suplier' => 'required|string|max:15',
-        ]);
+public function export()
+{
+    $data = SuplierModel::all();
 
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validasi gagal',
-                'msgField' => $validator->errors()
-            ]);
-        }
+    $exportData = $data->map(function ($item) {
+        return [
+            'Nama Suplier'   => $item->supplier_nama,
+            'Alamat Suplier' => $item->supplier_alamat,
+            'Tanggal Input'  => optional($item->created_at)->format('Y-m-d H:i:s'),
+        ];
+    });
 
-        $suplier = SuplierModel::find($id);
-        if ($suplier) {
-            $suplier->update($request->all());
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data berhasil diupdate'
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Data tidak ditemukan'
-        ]);
-    }
-
-    // Tampilkan konfirmasi hapus (via ajax)
-    public function confirm_ajax($id)
-    {
-        $suplier = SuplierModel::find($id);
-        return view('suplier.confirm_ajax', compact('suplier'));
-    }
-
-    // Hapus data (ajax)
-    public function delete_ajax(Request $request, $id)
-    {
-        $suplier = SuplierModel::find($id);
-        if ($suplier) {
-            $suplier->delete();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Data berhasil dihapus'
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Data tidak ditemukan'
-        ]);
-    }
+    return Excel::download(
+        new \Maatwebsite\Excel\Collections\SheetCollection([
+            'Data Suplier' => collect($exportData)
+        ]),
+        'data-suplier.xlsx'
+    );
+}
 }

@@ -1,75 +1,50 @@
 @extends('layouts.template')
 
-@section('content')
-  <div class="card card-outline card-primary">
-      <div class="card-header">
-        <h3 class="card-title">{{ $page->title }}</h3>
-        <div class="card-tools">
-          <a class="btn btn-sm btn-primary mt-1" href="{{ url('kategori/create') }}">Tambah</a>
-          <button onclick="modalAction('{{ url('kategori/create_ajax') }}')" class="btn btn-sm btn-success mt-1">Tambah Ajax</button> 
-        </div>
-      </div>
-      <div class="card-body">
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger">{{ session('error') }}</div>
-        @endif
+@section('title', 'Data Stok')
 
-        <table class="table table-bordered table-striped table-hover table-sm" id="table_kategori">
-            <thead>
-                <tr><th>ID</th><th>Kode Kategori</th><th>Nama Kategori</th><th>Aksi</th></tr>
-            </thead>
-        </table>
+@section('content')
+<div class="container-fluid">
+    <div class="card card-primary card-outline">
+        <div class="card-header">
+            <h3 class="card-title">Data Stok</h3>
+            <div class="card-tools">
+                <a href="{{ url('stok/create') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Tambah
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <table id="stok-table" class="table table-bordered table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Barang</th>
+                        <th>Tanggal</th>
+                        <th>Jumlah</th>
+                        <th>User Input</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
     </div>
-        <div id="myModal" class="modal fade animate shake" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" data-width="75%" aria-hidden="true"></div> 
+</div>
 @endsection
 
-@push('css')
-@endpush
-
 @push('js')
-  <script>
-    function modalAction(url = ''){ 
-      $('#myModal').load(url,function(){ 
-          $('#myModal').modal('show'); 
-      }); 
-    } 
- 
-    var dataKategori;
-    $(document).ready(function() {
-      dataKategori = $('#table_kategori').DataTable({
-          serverSide: true,
-          ajax: {
-              "url": "{{ url('kategori/list') }}",
-              "dataType": "json",
-              "type": "POST"
-          },
-          columns: [
-            {
-              data: "DT_RowIndex",
-              className: "text-center",
-              orderable: false,
-              searchable: false
-            }, {
-              data: "kategori_code",
-              className: "",
-              orderable: true,
-              searchable: true
-            }, {
-              data: "kategori_nama",
-              className: "",
-              orderable: true,
-              searchable: true
-            }, {
-              data: "aksi",
-              className: "text-center",
-              orderable: false,
-              searchable: false
-            }
-          ]
-      });
+<script>
+    $(document).ready(function () {
+        $('#stok-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ url("stok/list") }}',
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'barang_nama', name: 'barang.barang_nama' },
+                { data: 'stok_tanggal', name: 'stok_tanggal' },
+                { data: 'stok_jumlah', name: 'stok_jumlah' },
+                { data: 'user_nama', name: 'user.user_nama' },
+            ]
+        });
     });
-  </script>
+</script>
 @endpush

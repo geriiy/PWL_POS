@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
     // Menampilkan halaman awal user
+    
     public function index()
     {
         $breadcrumb = (object) [

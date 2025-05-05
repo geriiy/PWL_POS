@@ -10,5 +10,5 @@ class KategoriModel extends Model
     protected $table = 'm_kategori'; // Sesuaikan dengan nama tabel yang benar
     protected $primaryKey = 'kategori_id';
 
-    protected $fillable = ['kategori_code', 'kategori_nama']; // Field yang bisa diisi
+    protected $fillable = ['kategori_kode', 'kategori_nama']; // Field yang bisa diisi
 }

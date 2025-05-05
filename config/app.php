@@ -144,6 +144,15 @@ return [
         // 'store' => 'redis',
     ],
 
+    'providers' => [
+    Maatwebsite\Excel\ExcelServiceProvider::class,
+],
+
+'aliases' => [
+    'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+],
+
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
